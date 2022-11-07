@@ -1,11 +1,11 @@
-let fs = require('fs');  //import fs module
-let path = require('path');  //correct path
-let {
+const fs = require('fs');  //import fs module
+const path = require('path');  //correct path
+const {
   stdin,
   stdout
 } = process;
 
-let writeStream = fs.createWriteStream(path.join(__dirname, 'text.txt'));  //create new writeStream
+const writeStream = fs.createWriteStream(path.join(__dirname, 'text.txt'));  //create new writeStream
 
 stdout.write('\nHello, Stranger!\nWhere are you going?\n\n');
 stdin.on('data', (data) => {
