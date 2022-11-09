@@ -1,16 +1,10 @@
 const fs = require('fs'); //import fs modules
 const promises = require('fs/promises') //import fs/promises modules
 const path = require('path'); //correct path
-// const folder = path.join(__dirname, 'project-dist'); // path to project-dist folder
 const styles = path.join(__dirname, 'styles'); // path to project-dist folder
 const bundle = path.join(__dirname, 'project-dist', 'style.css');  // path to output bundle file
 const writeStream = fs.createWriteStream(bundle);
-const {
-  readdir,
-  copyFile,
-  rm,
-  mkdir
-} = require('fs/promises'); //import fs modules
+
 
 // Create HTML file
 (async function createHTML() {
@@ -65,27 +59,46 @@ fs.readdir(styles, {
 
 
 // Copy folder assets
-const assetsFolder = path.join(__dirname, 'assets'); // path to main folder
-const copyFolder = path.join(__dirname, 'project-dist', 'assets'); //path to copy folder
+fs.mkdir(path.join(__dirname, 'project-dist', 'assets'), { // path folder assets in folder project-dist
+  recursive: true
+}, error => {
+  if (error) throw error;
+});
 
-async function copyDirectory(data, target) {
-  try {
-    await rm(target, {
-      recursive: true,
-      force: true
-    });
-    await mkdir(target, {
-      recursive: true
-    });
-    const files = await readdir(data, {
+(async function copyAssets() {
+  fs.readdir(
+    path.join(__dirname, 'assets'), {
       withFileTypes: true
-    });
-    for (const file of files) {
-      await copyFile(path.join(data, file.name),path.join(target, file.name));
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-}
+    },
+    (error, folders) => {
+      if (error) {
+        throw error
+      };
+      folders.forEach(folder => {
+        fs.mkdir(path.join(__dirname, 'project-dist', 'assets', folder.name), {
+          recursive: true
+        }, error => {
+          if (error) throw error;
+        });
 
-copyDirectory(assetsFolder, copyFolder);
+        let folderPath = path.join(__dirname, 'assets', folder.name); // to copy folder
+        let copyFolderPath = path.join(__dirname, 'project-dist', 'assets', folder.name); // path to output copy files/
+
+        fs.readdir(
+          folderPath, {
+            withFileTypes: true
+          },
+          (error, files) => {
+            files.forEach(file => {
+              fs.copyFile(
+                path.join(folderPath, file.name),
+                path.join(copyFolderPath, file.name),
+                error => {
+                  if (error) throw error
+                }
+              );
+            });
+          });
+      });
+    });
+})();
