@@ -2,9 +2,9 @@ const fs = require('fs'); //import fs modules
 const promises = require('fs/promises') //import fs/promises modules
 const path = require('path'); //correct path
 const styles = path.join(__dirname, 'styles'); // path to project-dist folder
-const bundle = path.join(__dirname, 'project-dist', 'style.css');  // path to output bundle file
+const bundle = path.join(__dirname, 'project-dist', 'style.css'); // path to output bundle file
+const folderDist = path.join(__dirname, 'project-dist');
 const writeStream = fs.createWriteStream(bundle);
-
 
 // Create HTML file
 (async function createHTML() {
@@ -43,14 +43,14 @@ const writeStream = fs.createWriteStream(bundle);
 
 // Merged css. Folder styles
 fs.readdir(styles, {
-  withFileTypes: true  // if the setting With file types is true or not specified, the function returns a list of file names.
+  withFileTypes: true // if the setting With file types is true or not specified, the function returns a list of file names.
 }, (error, files) => {
   for (let file of files) {
     if (file.isFile() && file.name.split('.')[1] === 'css') {
       const filePath = path.join(styles, file.name);
       const readStream = fs.createReadStream(filePath, 'utf-8');
       let result = '';
-      
+
       readStream.on('data', chunk => result += chunk);
       readStream.on('end', () => writeStream.write(result));
     }
@@ -58,13 +58,19 @@ fs.readdir(styles, {
 });
 
 
-// Copy folder assets
+// Create project-dist
+fs.mkdir(folderDist, {
+  recursive: true
+}, err => {
+  if (err) throw err;
+});
 fs.mkdir(path.join(__dirname, 'project-dist', 'assets'), { // path folder assets in folder project-dist
   recursive: true
 }, error => {
   if (error) throw error;
 });
 
+// copy folder assets
 (async function copyAssets() {
   fs.readdir(
     path.join(__dirname, 'assets'), {
